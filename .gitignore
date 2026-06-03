@@ -8,3 +8,11 @@ db.sqlite3
 .pytest_cache/
 .coverage
 htmlcov/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python cache
+*.pyo
+*.pyd
