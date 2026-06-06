@@ -9,12 +9,10 @@ from apps.warehouses.models import Warehouse
 
 class PurchaseOrderStatus(models.TextChoices):
     DRAFT = "DRAFT", "Draft"
-    SUBMITTED = "SUBMITTED", "Submitted"
+    PENDING_APPROVAL = "PENDING_APPROVAL", "Pending Approval"
     APPROVED = "APPROVED", "Approved"
-    PARTIALLY_RECEIVED = (
-        "PARTIALLY_RECEIVED",
-        "Partially Received"
-    )
+    ORDERED = "ORDERED", "Ordered"
+    PARTIALLY_RECEIVED = "PARTIALLY_RECEIVED", "Partially Received"
     RECEIVED = "RECEIVED", "Received"
     CANCELLED = "CANCELLED", "Cancelled"
 
@@ -45,9 +43,21 @@ class PurchaseOrder(BaseModel):
         blank=True
     )
 
+    actual_delivery_date = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="created_purchase_orders"
+    )
+
     approved_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="approved_purchase_orders"
@@ -59,7 +69,7 @@ class PurchaseOrder(BaseModel):
     )
 
     total_amount = models.DecimalField(
-        max_digits=15,
+        max_digits=14,
         decimal_places=2,
         default=0
     )
@@ -73,8 +83,7 @@ class PurchaseOrder(BaseModel):
         db_table = "purchase_orders"
 
     def __str__(self):
-        return self.po_number
-    
+        return self.po_number    
 
 class PurchaseOrderItem(BaseModel):
     purchase_order = models.ForeignKey(
@@ -100,7 +109,7 @@ class PurchaseOrderItem(BaseModel):
     )
 
     total_price = models.DecimalField(
-        max_digits=15,
+        max_digits=14,
         decimal_places=2
     )
 

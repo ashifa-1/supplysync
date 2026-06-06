@@ -9,7 +9,7 @@ class Supplier(BaseModel):
         unique=True
     )
 
-    company_name = models.CharField(
+    name = models.CharField(
         max_length=200
     )
 
@@ -21,6 +21,12 @@ class Supplier(BaseModel):
 
     phone = models.CharField(
         max_length=20
+    )
+
+    gstin = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True
     )
 
     address = models.TextField()
@@ -45,4 +51,4 @@ class Supplier(BaseModel):
         db_table = "suppliers"
 
     def __str__(self):
-        return f"{self.supplier_code} - {self.company_name}"
+        return f"{self.supplier_code} - {self.name}"
