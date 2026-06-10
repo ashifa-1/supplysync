@@ -7,10 +7,11 @@ from .serializers import (
     LoginSerializer,
     LogoutSerializer,
     UserSerializer,
+    ChangePasswordSerializer,
 )
 from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated
-
+from django.contrib.auth import update_session_auth_hash
 
 class RegisterView(APIView):
     def post(self, request):
@@ -118,4 +119,62 @@ class ProfileView(APIView):
             UserSerializer(
                 request.user
             ).data
+        )
+
+
+
+class ChangePasswordView(
+    APIView
+):
+    permission_classes = [
+        IsAuthenticated
+    ]
+
+    def post(
+        self,
+        request
+    ):
+        serializer = (
+            ChangePasswordSerializer(
+                data=request.data
+            )
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        user = request.user
+
+        if not user.check_password(
+            serializer.validated_data[
+                "old_password"
+            ]
+        ):
+            return Response(
+                {
+                    "detail":
+                    "Old password is incorrect."
+                },
+                status=400
+            )
+
+        user.set_password(
+            serializer.validated_data[
+                "new_password"
+            ]
+        )
+
+        user.save()
+
+        update_session_auth_hash(
+            request,
+            user
+        )
+
+        return Response(
+            {
+                "message":
+                "Password changed successfully."
+            }
         )

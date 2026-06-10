@@ -109,3 +109,19 @@ class LogoutSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 "Invalid or expired refresh token."
             )
+
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField()
+
+    new_password = serializers.CharField()
+
+    def validate_new_password(
+        self,
+        value
+    ):
+        validate_password_strength(
+            value
+        )
+        return value
