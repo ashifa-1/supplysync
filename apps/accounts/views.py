@@ -8,6 +8,7 @@ from .serializers import (
     LogoutSerializer,
     UserSerializer,
 )
+from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -23,8 +24,24 @@ class RegisterView(APIView):
 
         user = serializer.save()
 
+        refresh = RefreshToken.for_user(
+            user
+        )
+
         return Response(
-            UserSerializer(user).data,
+            {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "full_name": user.full_name,
+                "role": user.role,
+                "access_token": str(
+                    refresh.access_token
+                ),
+                "refresh_token": str(
+                    refresh
+                ),
+            },
             status=status.HTTP_201_CREATED
         )
 
@@ -41,21 +58,31 @@ class LoginView(APIView):
 
         user = serializer.validated_data["user"]
 
+        user.last_login_at = (
+            timezone.now()
+        )
+
+        user.save(
+            update_fields=[
+                "last_login_at"
+            ]
+        )
+
         refresh = RefreshToken.for_user(
             user
         )
 
         return Response(
             {
-                "access": str(
+                "access_token": str(
                     refresh.access_token
                 ),
-                "refresh": str(
+                "refresh_token": str(
                     refresh
                 ),
-                "user": UserSerializer(
-                    user
-                ).data,
+                "user_id": user.id,
+                "username": user.username,
+                "role": user.role,
             }
         )
     
