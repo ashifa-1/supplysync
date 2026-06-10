@@ -4,6 +4,7 @@ from .views import (
     RegisterView,
     LoginView,
     LogoutView,
+    ProfileView,
 )
 
 urlpatterns = [
@@ -21,5 +22,10 @@ urlpatterns = [
         "logout/",
         LogoutView.as_view(),
         name="logout",
+    ),
+    path(
+        "profile/",
+        ProfileView.as_view(),
+        name="profile",
     ),
 ]

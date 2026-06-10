@@ -8,6 +8,7 @@ from .serializers import (
     LogoutSerializer,
     UserSerializer,
 )
+from rest_framework.permissions import IsAuthenticated
 
 
 class RegisterView(APIView):
@@ -76,4 +77,18 @@ class LogoutView(APIView):
                 "message": "Logout successful."
             },
             status=status.HTTP_200_OK
+        )
+
+
+
+class ProfileView(APIView):
+    permission_classes = [
+        IsAuthenticated
+    ]
+
+    def get(self, request):
+        return Response(
+            UserSerializer(
+                request.user
+            ).data
         )
