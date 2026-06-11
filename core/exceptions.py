@@ -30,6 +30,19 @@ class InvalidOperationException(APIException):
     default_code = "INVALID_OPERATION"
 
 
+class WarehouseHasActiveInventoryException(
+    APIException
+):
+    status_code = 409
+
+    default_detail = (
+        "Warehouse has active inventory"
+    )
+
+    default_code = (
+        "WAREHOUSE_HAS_ACTIVE_INVENTORY"
+    )
+
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
 

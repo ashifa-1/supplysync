@@ -15,6 +15,15 @@ from .services import (
     get_warehouse_with_summary,
 )
 
+from .filters import WarehouseFilter
+from apps.inventory.models import (
+    Inventory
+)
+
+from core.exceptions import (
+    WarehouseHasActiveInventoryException
+)
+
 from core.permissions import (
     IsAdminUser,
 )
@@ -25,6 +34,10 @@ class WarehouseListCreateView(
 ):
     serializer_class = (
         WarehouseSerializer
+    )
+
+    filterset_class = (
+        WarehouseFilter
     )
 
     def create(
@@ -57,33 +70,7 @@ class WarehouseListCreateView(
         )
 
     def get_queryset(self):
-        queryset = (
-            Warehouse.objects.all()
-        )
-
-        city = self.request.GET.get(
-            "city"
-        )
-
-        state = self.request.GET.get(
-            "state"
-        )
-
-        if city:
-            queryset = (
-                queryset.filter(
-                    city=city
-                )
-            )
-
-        if state:
-            queryset = (
-                queryset.filter(
-                    state=state
-                )
-            )
-
-        return queryset
+        return Warehouse.objects.all()  
 
     def get_permissions(
         self
@@ -156,6 +143,25 @@ class WarehouseDetailView(
         warehouse = (
             self.get_object()
         )
+
+        has_inventory = (
+            Inventory.objects.filter(
+                warehouse=warehouse
+            ).filter(
+                quantity_available__gt=0
+            ).exists()
+            or
+            Inventory.objects.filter(
+                warehouse=warehouse
+            ).filter(
+                quantity_reserved__gt=0
+            ).exists()
+        )
+
+        if has_inventory:
+            raise (
+                WarehouseHasActiveInventoryException
+            )
 
         warehouse.delete()
 
