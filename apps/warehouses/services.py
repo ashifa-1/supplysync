@@ -3,7 +3,11 @@ from .models import Warehouse
 from core.exceptions import (
     ResourceNotFoundException,
 )
+from django.db.models import Sum
 
+from apps.inventory.models import (
+    Inventory,
+)
 import random
 import string
 
@@ -65,4 +69,33 @@ def get_warehouse_with_summary(
         warehouse_id
     )
 
-    return warehouse
+    inventory = Inventory.objects.filter(
+        warehouse=warehouse
+    )
+
+    total_distinct_products = (
+        inventory.count()
+    )
+
+    total_quantity_available = (
+        inventory.aggregate(
+            total=Sum(
+                "quantity_available"
+            )
+        )["total"]
+        or 0
+    )
+
+    return {
+        "id": warehouse.id,
+        "warehouse_code": (
+            warehouse.warehouse_code
+        ),
+        "name": warehouse.name,
+        "city": warehouse.city,
+        "state": warehouse.state,
+        "total_distinct_products":
+            total_distinct_products,
+        "total_quantity_available":
+            total_quantity_available,
+    }

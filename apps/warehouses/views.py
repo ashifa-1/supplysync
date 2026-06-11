@@ -1,4 +1,9 @@
 from rest_framework import generics
+from rest_framework.permissions import (
+    IsAuthenticated
+)
+from rest_framework.response import Response
+from rest_framework import status
 
 from .models import Warehouse
 from .serializers import (
@@ -7,18 +12,21 @@ from .serializers import (
 from .services import (
     get_warehouse_by_id,
     create_warehouse,
+    get_warehouse_with_summary,
 )
-from rest_framework.response import Response
-from rest_framework import status
+
 from core.permissions import (
     IsAdminUser,
 )
 
 
-class WarehouseListCreateView(generics.ListCreateAPIView):
+class WarehouseListCreateView(
+    generics.ListCreateAPIView
+):
     serializer_class = (
         WarehouseSerializer
     )
+
     def create(
         self,
         request,
@@ -47,6 +55,7 @@ class WarehouseListCreateView(generics.ListCreateAPIView):
             ).data,
             status=status.HTTP_201_CREATED
         )
+
     def get_queryset(self):
         queryset = (
             Warehouse.objects.all()
@@ -56,10 +65,8 @@ class WarehouseListCreateView(generics.ListCreateAPIView):
             "city"
         )
 
-        state = (
-            self.request.GET.get(
-                "state"
-            )
+        state = self.request.GET.get(
+            "state"
         )
 
         if city:
@@ -78,11 +85,20 @@ class WarehouseListCreateView(generics.ListCreateAPIView):
 
         return queryset
 
-    def get_permissions(self):
-        if self.request.method == "POST":
-            return [IsAdminUser()]
+    def get_permissions(
+        self
+    ):
+        if (
+            self.request.method
+            == "POST"
+        ):
+            return [
+                IsAdminUser()
+            ]
 
-        return super().get_permissions()
+        return [
+            IsAuthenticated()
+        ]
 
 
 class WarehouseDetailView(
@@ -92,11 +108,57 @@ class WarehouseDetailView(
         WarehouseSerializer
     )
 
-    permission_classes = [
-        IsAdminUser
-    ]
+    def get_permissions(
+        self
+    ):
+        if self.request.method in [
+            "PATCH",
+            "PUT",
+            "DELETE",
+        ]:
+            return [
+                IsAdminUser()
+            ]
 
-    def get_object(self):
+        return [
+            IsAuthenticated()
+        ]
+
+    def get_object(
+        self
+    ):
         return get_warehouse_by_id(
             self.kwargs["pk"]
+        )
+
+    def retrieve(
+        self,
+        request,
+        *args,
+        **kwargs
+    ):
+        data = (
+            get_warehouse_with_summary(
+                self.kwargs["pk"]
+            )
+        )
+
+        return Response(
+            data
+        )
+
+    def destroy(
+        self,
+        request,
+        *args,
+        **kwargs
+    ):
+        warehouse = (
+            self.get_object()
+        )
+
+        warehouse.delete()
+
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
         )
