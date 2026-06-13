@@ -38,4 +38,10 @@ urlpatterns = [
             "apps.suppliers.urls"
         ),
     ),
+    path(
+        "api/v1/purchase-orders/",
+        include(
+            "apps.purchase_orders.urls"
+        ),
+    ),
 ]   
