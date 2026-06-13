@@ -32,4 +32,10 @@ urlpatterns = [
             "apps.inventory.urls"
         ),
     ),
+    path(
+        "api/v1/suppliers/",
+        include(
+            "apps.suppliers.urls"
+        ),
+    ),
 ]   
