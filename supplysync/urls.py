@@ -44,4 +44,10 @@ urlpatterns = [
             "apps.purchase_orders.urls"
         ),
     ),
+    path(
+        "api/v1/sales-orders/",
+        include(
+            "apps.sales_orders.urls"
+        ),
+    ),
 ]   
