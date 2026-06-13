@@ -26,4 +26,10 @@ urlpatterns = [
             "apps.products.urls"
         ),
     ),
+    path(
+        "api/v1/inventory/",
+        include(
+            "apps.inventory.urls"
+        ),
+    ),
 ]   
