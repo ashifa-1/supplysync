@@ -6,9 +6,14 @@ from .models import Category
 class CategorySerializer(
     serializers.ModelSerializer
 ):
+    category_code = serializers.CharField(
+        required=False
+    )
+
     class Meta:
         model = Category
         fields = "__all__"
+
 
 
 class CategoryTreeSerializer(
