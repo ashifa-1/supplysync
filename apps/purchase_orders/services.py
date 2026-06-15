@@ -36,6 +36,10 @@ def create_purchase_order(
     data,
     created_by_user_id
 ):
+    """
+    Create purchase order in DRAFT state.
+    """
+
     data["po_number"] = (
         generate_po_number()
     )
@@ -56,10 +60,15 @@ def create_purchase_order(
 def get_purchase_order(
     po_id
 ):
+    """
+    Return purchase order by id.
+    """
+
     try:
         return PurchaseOrder.objects.get(
             id=po_id
         )
+
     except PurchaseOrder.DoesNotExist:
         raise ResourceNotFoundException(
             "Purchase order not found"
@@ -69,9 +78,22 @@ def get_purchase_order(
 def submit_purchase_order(
     po_id
 ):
+    """
+    Move PO from DRAFT
+    to PENDING_APPROVAL.
+    """
+
     po = get_purchase_order(
         po_id
     )
+
+    if (
+        po.status
+        != PurchaseOrderStatus.DRAFT
+    ):
+        raise InvalidOperationException(
+            "INVALID_PO_STATUS"
+        )
 
     if (
         not po.items.exists()
@@ -96,9 +118,22 @@ def approve_purchase_order(
     po_id,
     approved_by_user_id
 ):
+    """
+    Approve purchase order.
+    """
+
     po = get_purchase_order(
         po_id
     )
+
+    if (
+        po.status
+        != PurchaseOrderStatus
+        .PENDING_APPROVAL
+    ):
+        raise InvalidOperationException(
+            "PO_NOT_PENDING_APPROVAL"
+        )
 
     if (
         po.created_by_id
@@ -120,6 +155,43 @@ def approve_purchase_order(
     po.approved_at = (
         timezone.now()
     )
+
+    po.save()
+
+    return po
+
+
+def cancel_purchase_order(
+    po_id,
+    reason
+):
+    """
+    Cancel purchase order.
+    """
+
+    po = get_purchase_order(
+        po_id
+    )
+
+    allowed_statuses = [
+        PurchaseOrderStatus.DRAFT,
+        PurchaseOrderStatus.PENDING_APPROVAL,
+        PurchaseOrderStatus.APPROVED,
+    ]
+
+    if (
+        po.status
+        not in allowed_statuses
+    ):
+        raise InvalidOperationException(
+            "PO_CANCELLATION_NOT_ALLOWED"
+        )
+
+    po.status = (
+        PurchaseOrderStatus.CANCELLED
+    )
+
+    po.notes = reason
 
     po.save()
 
