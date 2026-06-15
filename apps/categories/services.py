@@ -1,7 +1,8 @@
 import random
 import string
 
-from .models import Category
+from apps.categories.models import Category
+from core.exceptions import ResourceNotFoundException
 
 
 def generate_category_code():
@@ -23,20 +24,32 @@ def generate_category_code():
             return code
 
 
-def create_category(data):
-    if not data.get(
-        "category_code"
-    ):
-        data[
-            "category_code"
-        ] = generate_category_code()
+def create_category(data: dict) -> Category:
+    parent_category = None
+    parent_category_id = data.pop("parent_category_id", None)
+
+    if parent_category_id is not None:
+        try:
+            parent_category = Category.objects.get(
+                id=parent_category_id
+            )
+        except Category.DoesNotExist:
+            raise ResourceNotFoundException(
+                "Parent category not found"
+            )
+
+    if not data.get("category_code"):
+        data["category_code"] = generate_category_code()
 
     return Category.objects.create(
-        **data
+        parent_category=parent_category,
+        **data,
     )
 
 
-def get_category_tree():
-    return Category.objects.filter(
-        parent_category__isnull=True
+def get_category_tree() -> list:
+    return list(
+        Category.objects.filter(
+            parent_category__isnull=True,
+        ).prefetch_related("children")
     )

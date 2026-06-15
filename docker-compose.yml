@@ -17,25 +17,25 @@ services:
     container_name: supplysync_redis
     restart: unless-stopped
     ports:
-      - "6380:6379"
+      - "6379:6379"
 
-#  celery_worker:
-#    image: python:3.12
-#    container_name: supplysync_celery_worker
-#    working_dir: /app
-#    command: celery -A supplysync worker -l info
-#    depends_on:
-#      - postgres
-#      - redis
+  celery_worker:
+    image: python:3.12-alpine
+    container_name: supplysync_celery_worker
+    working_dir: /app
+    command: celery -A supplysync worker -l info
+    depends_on:
+      - postgres
+      - redis
 
-#  celery_beat:
-#    image: python:3.12
-#    container_name: supplysync_celery_beat
-#    working_dir: /app
-#    command: celery -A supplysync beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
-#    depends_on:
-#      - postgres
-#      - redis
+  celery_beat:
+    image: python:3.12-alpine
+    container_name: supplysync_celery_beat
+    working_dir: /app
+    command: celery -A supplysync beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    depends_on:
+      - postgres
+      - redis
 
 volumes:
   postgres_data:

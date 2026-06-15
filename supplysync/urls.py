@@ -50,4 +50,10 @@ urlpatterns = [
             "apps.sales_orders.urls"
         ),
     ),
+    path(
+        "api/v1/reports/",
+        include(
+            "apps.reports.urls"
+        ),
+    ),
 ]   

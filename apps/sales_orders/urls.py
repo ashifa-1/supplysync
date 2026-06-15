@@ -4,6 +4,7 @@ from .views import (
     SalesOrderListCreateView,
     SalesOrderDispatchView,
     SalesOrderDeliverView,
+    SalesOrderCancelView,
 )
 
 urlpatterns = [
@@ -23,5 +24,11 @@ urlpatterns = [
         "<int:pk>/deliver/",
         SalesOrderDeliverView.as_view(),
         name="sales-order-deliver",
+    ),
+
+    path(
+        "<int:pk>/cancel/",
+        SalesOrderCancelView.as_view(),
+        name="sales-order-cancel",
     ),
 ]

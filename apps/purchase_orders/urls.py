@@ -4,6 +4,8 @@ from .views import (
     PurchaseOrderListCreateView,
     PurchaseOrderSubmitView,
     PurchaseOrderApproveView,
+    PurchaseOrderCancelView,
+    PurchaseOrderReceiveView,
 )
 
 urlpatterns = [
@@ -23,5 +25,15 @@ urlpatterns = [
         "<int:pk>/approve/",
         PurchaseOrderApproveView.as_view(),
         name="po-approve",
+    ),
+    path(
+        "<int:pk>/cancel/",
+        PurchaseOrderCancelView.as_view(),
+        name="po-cancel",
+    ),
+    path(
+        "<int:pk>/receive/",
+        PurchaseOrderReceiveView.as_view(),
+        name="po-receive",
     ),
 ]

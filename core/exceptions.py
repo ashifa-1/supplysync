@@ -29,19 +29,27 @@ class InvalidOperationException(APIException):
     default_detail = "Invalid operation"
     default_code = "INVALID_OPERATION"
 
+    def __init__(self, detail=None, code=None):
+        super().__init__(detail)
+        if code:
+            self.default_code = code
 
-class WarehouseHasActiveInventoryException(
-    APIException
-):
+
+class WarehouseHasActiveInventoryException(APIException):
     status_code = 409
+    default_detail = "Warehouse has active inventory"
+    default_code = "WAREHOUSE_HAS_ACTIVE_INVENTORY"
 
-    default_detail = (
-        "Warehouse has active inventory"
-    )
 
-    default_code = (
-        "WAREHOUSE_HAS_ACTIVE_INVENTORY"
-    )
+class InsufficientStockException(APIException):
+    status_code = 422
+    default_detail = "Insufficient stock"
+    default_code = "INSUFFICIENT_STOCK_FOR_ORDER"
+
+    def __init__(self, detail=None, short_items=None):
+        super().__init__(detail)
+        self.short_items = short_items or []
+
 
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
@@ -64,6 +72,7 @@ def custom_exception_handler(exc, context):
     error_code = getattr(exc, "default_code", "ERROR")
 
     errors = []
+    extra_data = {}
 
     if isinstance(exc, ValidationError):
         error_code = "VALIDATION_FAILED"
@@ -78,6 +87,9 @@ def custom_exception_handler(exc, context):
                         }
                     )
 
+    if isinstance(exc, InsufficientStockException):
+        extra_data["short_items"] = exc.short_items
+
     response.data = {
         "timestamp": datetime.utcnow().isoformat(),
         "status": response.status_code,
@@ -85,6 +97,7 @@ def custom_exception_handler(exc, context):
         "message": str(getattr(exc, "detail", "Error")),
         "path": request.path if request else "",
         "errors": errors,
+        **extra_data,
     }
 
     return response

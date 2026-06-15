@@ -13,6 +13,7 @@ from .services import (
     create_sales_order,
     dispatch_sales_order,
     deliver_sales_order,
+    cancel_sales_order,
 )
 
 
@@ -95,4 +96,28 @@ class SalesOrderDeliverView(
                 "id": so.id,
                 "status": so.status,
             }
+        )
+
+
+class SalesOrderCancelView(
+    APIView
+):
+    def post(
+        self,
+        request,
+        pk
+    ):
+        so = cancel_sales_order(
+            pk,
+            request.data.get(
+                "reason",
+                "Order cancelled by user",
+            ),
+        )
+
+        return Response(
+            SalesOrderSerializer(
+                so
+            ).data,
+            status=status.HTTP_200_OK,
         )

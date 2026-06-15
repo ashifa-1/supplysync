@@ -93,7 +93,17 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "core.pagination.StandardResultsPagination",
-    "PAGE_SIZE": 20,   
+    "PAGE_SIZE": 20,
+    "DEFAULT_THROTTLE_CLASSES": (
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "20/min",
+        "user": "200/min",
+        "login": "5/min",
+    },
 }
 
 # JWT
@@ -107,9 +117,19 @@ SIMPLE_JWT = {
 }
 
 # Celery
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
 CELERY_TASK_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TIMEZONE = "Asia/Kolkata"
+
+# Cache
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://localhost:6379/1",
+    }
+}
 
 # OpenAPI
 SPECTACULAR_SETTINGS = {
@@ -117,4 +137,11 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Backend API for SupplySync Inventory and Order Management Platform",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+}
+
+CELERY_BEAT_SCHEDULE = {
+    "auto-invalidate-low-stock-cache": {
+        "task": "apps.inventory.tasks.auto_invalidate_low_stock_cache",
+        "schedule": 300.0,
+    },
 }

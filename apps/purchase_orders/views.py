@@ -13,6 +13,8 @@ from .services import (
     create_purchase_order,
     submit_purchase_order,
     approve_purchase_order,
+    cancel_purchase_order,
+    receive_purchase_order,
 )
 
 
@@ -78,6 +80,31 @@ class PurchaseOrderSubmitView(
         )
 
 
+class PurchaseOrderCancelView(
+    APIView
+):
+    def post(
+        self,
+        request,
+        pk
+    ):
+        po = cancel_purchase_order(
+            pk,
+            request.data.get(
+                "reason",
+                "Order cancelled by user",
+            ),
+        )
+
+        return Response(
+            {
+                "id": po.id,
+                "status": po.status,
+                "notes": po.notes,
+            }
+        )
+
+
 class PurchaseOrderApproveView(
     APIView
 ):
@@ -96,4 +123,26 @@ class PurchaseOrderApproveView(
                 "id": po.id,
                 "status": po.status,
             }
+        )
+
+
+class PurchaseOrderReceiveView(
+    APIView
+):
+    def post(
+        self,
+        request,
+        pk
+    ):
+        po = receive_purchase_order(
+            pk,
+            request.data,
+            request.user.id,
+        )
+
+        return Response(
+            PurchaseOrderSerializer(
+                po
+            ).data,
+            status=status.HTTP_200_OK,
         )
